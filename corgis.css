@@ -1,0 +1,43 @@
+body, html {
+	padding: 0;
+	margin: 0;
+	height: 100%;
+}
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+header {
+	height: 96px;
+	background: white;
+	border-bottom: solid 1px #ddd;
+	flex-grow: 0;
+	background: #f7f7f7;
+}
+textarea, .CodeMirror {
+	flex-grow: 1;
+	background: white;
+	cursor: text;
+}
+
+.corgi {
+	width: 131px;
+	height: 96px;
+	position: absolute;
+	transition-property: left, right;
+  transition-duration: 10s;
+  transition-timing-function: linear;
+}
+.corgi.choco {
+	background-image: url(corgi-choco.gif);
+	right: -131px;
+}
+.corgi.oreo {
+	background-image: url(corgi-oreo.gif);
+	left: -131px;
+}
+.corgi.velvet {
+	background-image: url(corgi-velvet.gif);
+	right: -131px;
+}
