@@ -14,6 +14,8 @@ header {
 	border-bottom: solid 1px #ddd;
 	flex-grow: 0;
 	background: #f7f7f7;
+	position: relative;
+	overflow: hidden;
 }
 textarea, .CodeMirror {
 	flex-grow: 1;
@@ -21,23 +23,32 @@ textarea, .CodeMirror {
 	cursor: text;
 }
 
-.corgi {
+.animal {
+	position: absolute;
 	width: 131px;
 	height: 96px;
-	position: absolute;
+	right: -131px;
+	background-repeat: no-repeat;
+	background-position: bottom center;
 	transition-property: left, right;
   transition-duration: 10s;
   transition-timing-function: linear;
 }
-.corgi.choco {
-	background-image: url(corgi-choco.gif);
-	right: -131px;
-}
-.corgi.oreo {
-	background-image: url(corgi-oreo.gif);
+
+.animal.flipped {
+	right: auto;
 	left: -131px;
+	-moz-transform: scaleX(-1);
+	-o-transform: scaleX(-1);
+	-webkit-transform: scaleX(-1);
+	transform: scaleX(-1);
+	filter: FlipH;
 }
-.corgi.velvet {
-	background-image: url(corgi-velvet.gif);
-	right: -131px;
+
+.cat {
+	background-size: 98px 80px;
+}
+
+.corgi {
+	background-size: 131px 96px;
 }
