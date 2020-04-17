@@ -19,10 +19,10 @@ const codeMirror = CodeMirror.fromTextArea($('#code').get(0), {
 	mode: "text/javascript"
 });
 
-function animals() {
+function animals(animalToAdd) {
 	const $header = $('header');
 	const $animal = $('<div class="animal">');
-	const animal = ANIMALS[getRandomInt(ANIMALS.length)];
+	const animal = animalToAdd || ANIMALS[getRandomInt(ANIMALS.length)];
 
 	$animal.addClass(animal.type);
 	$animal.css('background-image', `url(${animal.imageUrl})`);
@@ -47,15 +47,36 @@ function animals() {
 	}, 1);
 }
 
+function magicWord() {
+	const animal = {'type': 'cat', 'imageUrl': 'cat-calico.gif'};
+	$('.animal').removeClass('corgi').addClass('cat').css('background-image', `url(${animal.imageUrl})`);
+	for (let i = 0; i < 10; i++) {
+		animals(animal);
+	}
+}
+
+let buffer = '';
+
+function checkBuffer(addToBuffer) {
+	if (addToBuffer) {
+		buffer += addToBuffer;
+	}
+	buffer = buffer.substring(buffer.length - 4);
+	if (buffer.toLowerCase() === 'yuni') {
+		magicWord();
+	}
+}
+
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
 }
 
-codeMirror.on('change', function () {
+codeMirror.on('change', function (instance, changeObj) {
 	if (getRandomInt(3) === 0) {
 		animals();
 	}
 	localStorage.setItem('code', codeMirror.getValue());
+	checkBuffer(changeObj.text.join(''));
 });
 
 function initialize() {
