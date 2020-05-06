@@ -47,8 +47,7 @@ function animals(animalToAdd) {
 	}, 1);
 }
 
-function magicWord() {
-	const animal = {'type': 'cat', 'imageUrl': 'cat-calico.gif'};
+function magicWord(animal) {
 	$('.animal').removeClass('corgi').addClass('cat').css('background-image', `url(${animal.imageUrl})`);
 	for (let i = 0; i < 10; i++) {
 		animals(animal);
@@ -65,7 +64,9 @@ function checkBuffer(addToBuffer) {
 	buffer += addToBuffer;
 	buffer = buffer.substring(buffer.length - 4);
 	if (buffer.toLowerCase() === 'yuni') {
-		magicWord();
+		magicWord({'type': 'cat', 'imageUrl': 'cat-calico.gif'});
+	} else if (buffer.toLowerCase() === 'dory') {
+		magicWord({'type': 'corgi', 'imageUrl': 'corgi-velvet.gif'});
 	}
 }
 
