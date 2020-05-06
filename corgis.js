@@ -58,9 +58,11 @@ function magicWord() {
 let buffer = '';
 
 function checkBuffer(addToBuffer) {
-	if (addToBuffer) {
-		buffer += addToBuffer;
+	if (!addToBuffer || addToBuffer.length !== 1 || addToBuffer === buffer.substring(buffer.length - 1)) {
+		// Ignore repeat characters or multiple characters pasted in at a time.
+		return;
 	}
+	buffer += addToBuffer;
 	buffer = buffer.substring(buffer.length - 4);
 	if (buffer.toLowerCase() === 'yuni') {
 		magicWord();
