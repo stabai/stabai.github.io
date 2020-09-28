@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<title>Fun Words</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Indie+Flower&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="corgis.css">
+<link rel="stylesheet" href="fun-words.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<header></header>
+<div id="game-area" class="intro-mode">
+  <div id="game-intro" class="mode-area">
+    <button id="intro-play-button" onclick="newGame()">Play!</button>
+  </div>
+  <div id="game-activity" class="mode-area">
+    <div id="current-word"><div id="current-word-indicator"><div class="upper">&#x2bc6;</div><div class="lower">&#x2bc5;</div></div><canvas id="done-letters"></canvas></div>
+    <div id="word-images"></div>
+  </div>
+  <div id="game-results" class="mode-area">
+    <canvas id="rainbow-arc"></canvas>
+    <h1>Good job!</h1>
+    <p>You got <span class="score"></span> points!</p>
+    <p class="tokens"></p>
+    <button id="play-again-button" onclick="newGame()">Play Again!</button>
+  </div>
+</div>
+
+<script src="corgis.js"></script>
+<script src="fun-words.js"></script>
+<script src="rainbow-arc.js"></script>
+<script src="rainbow-text.js"></script>

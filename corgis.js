@@ -13,12 +13,6 @@ var ANIMALS = [
 	{ 'type': 'corgi', 'imageUrl': 'corgi-velvet.gif' },
 ];
 
-const codeMirror = CodeMirror.fromTextArea($('#code').get(0), {
-	lineNumbers: true,
-	matchBrackets: true,
-	mode: "text/javascript"
-});
-
 function animals(animalToAdd) {
 	const $header = $('header');
 	const $animal = $('<div class="animal">');
@@ -47,45 +41,15 @@ function animals(animalToAdd) {
 	}, 1);
 }
 
-function magicWord() {
-	const animal = {'type': 'cat', 'imageUrl': 'cat-calico.gif'};
-	$('.animal').removeClass('corgi').addClass('cat').css('background-image', `url(${animal.imageUrl})`);
+function magicWord(animal) {
+	if (animal != null) {
+		$('.animal').removeClass('corgi').addClass('cat').css('background-image', `url(${animal.imageUrl})`);
+	}
 	for (let i = 0; i < 10; i++) {
 		animals(animal);
-	}
-}
-
-let buffer = '';
-
-function checkBuffer(addToBuffer) {
-	if (!addToBuffer || addToBuffer.length !== 1 || addToBuffer === buffer.substring(buffer.length - 1)) {
-		// Ignore repeat characters or multiple characters pasted in at a time.
-		return;
-	}
-	buffer += addToBuffer;
-	buffer = buffer.substring(buffer.length - 4);
-	if (buffer.toLowerCase() === 'yuni') {
-		magicWord();
 	}
 }
 
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
 }
-
-codeMirror.on('change', function (instance, changeObj) {
-	if (getRandomInt(3) === 0) {
-		animals();
-	}
-	localStorage.setItem('code', codeMirror.getValue());
-	checkBuffer(changeObj.text.join(''));
-});
-
-function initialize() {
-	let code = localStorage.getItem('code') || animals.toString();
-	codeMirror.replaceSelection(code);
-	codeMirror.focus();
-	animals();
-}
-
-initialize();

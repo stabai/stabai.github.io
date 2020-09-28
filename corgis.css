@@ -10,14 +10,13 @@ body {
 
 header {
 	height: 96px;
-	background: white;
 	border-bottom: solid 1px #ddd;
 	flex-grow: 0;
 	background: #f7f7f7;
 	position: relative;
 	overflow: hidden;
 }
-textarea, .CodeMirror {
+textarea, .CodeMirror, #game-area {
 	flex-grow: 1;
 	background: white;
 	cursor: text;
@@ -28,6 +27,7 @@ textarea, .CodeMirror {
 	width: 131px;
 	height: 96px;
 	right: -131px;
+	bottom: 0;
 	background-repeat: no-repeat;
 	background-position: bottom center;
 	transition-property: left, right;
@@ -42,7 +42,6 @@ textarea, .CodeMirror {
 	-o-transform: scaleX(-1);
 	-webkit-transform: scaleX(-1);
 	transform: scaleX(-1);
-	filter: FlipH;
 }
 
 .cat {
