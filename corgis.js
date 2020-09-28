@@ -50,6 +50,22 @@ function magicWord(animal) {
 	}
 }
 
+let buffer = '';
+
+function checkBuffer(addToBuffer) {
+	if (!addToBuffer || addToBuffer.length !== 1 || addToBuffer === buffer.substring(buffer.length - 1)) {
+		// Ignore repeat characters or multiple characters pasted in at a time.
+		return;
+	}
+	buffer += addToBuffer;
+	buffer = buffer.substring(buffer.length - 4);
+	if (buffer.toLowerCase() === 'yuni') {
+    magicWord({'type': 'cat', 'imageUrl': 'cat-calico.gif'});
+  } else if (buffer.toLowerCase() === 'dory') {
+    magicWord({'type': 'corgi', 'imageUrl': 'corgi-velvet.gif'});
+	}
+}
+
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
 }
