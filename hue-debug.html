@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="">
+<head>
+  <meta charset="UTF-8">
+  <title>Hue Debug</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+
+  <style>
+  *, input, select, textarea {
+    font-family: 'Open Sans', sans-serif;
+  }
+  pre {
+    font-family: 'Source Code Pro', monospace;
+  }
+
+  #console {
+    overflow-y: scroll;
+    height: 300px;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  #console, fieldset {
+    border: 0;
+    border-radius: 4px;
+    margin: 20px auto;
+    box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.1), 1px -1px 4px rgba(0, 0, 0, 0.1), -1px 1px 4px rgba(0, 0, 0, 0.1), -1px -1px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+  }
+
+  button {
+    padding: 5px 10px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  fieldset {
+    background: #eee;
+    position: relative;
+  }
+  legend {
+    color: black;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 2px;
+    background: white;
+    padding: 5px 10px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1), 1px -1px 4px rgba(0, 0, 0, 0.1), -1px 1px 4px rgba(0, 0, 0, 0.1), -1px -1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  #user-section fieldset[disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  #app-id {
+    width: 50ch;
+  }
+  </style>
+</head>
+
+<body>
+
+
+<fieldset>
+  <legend>Bridge</legend>
+  <label>
+    Hue bridge IP address
+    <input type="text" id="bridge-ip">
+  </label>
+  <button id="connect">Connect</button>
+</fieldset>
+
+<fieldset id="user-section">
+  <legend>User</legend>
+  Mode
+  <select id="user-mode">
+    <option value="create">Create new user</option>
+    <option value="existing">Use existing user</option>
+  </select>
+  <fieldset class="create">
+    <legend>New user</legend>
+    <label>
+      User type
+      <input type="text" id="app-type">
+    </label>
+    <button id="create-user">Create</button>
+  </fieldset>
+  <fieldset class="existing">
+    <legend>Existing user</legend>
+    <label>
+      User ID
+      <input type="text" id="app-id">
+    </label>
+    <button id="connect-user">Connect</button>
+  </fieldset>
+</fieldset>
+
+<fieldset>
+  <legend>Light group</legend>
+  <select id="light-group"></select>
+  <button id="select-light-group">Select</button>
+</fieldset>
+
+<pre id="console"></pre>
+
+
+<script src="jshue.js"></script>
+
+<script>
+const logLn = (line, skipAfter) => {
+  const postamble = skipAfter ? '\n\n' : '\n';
+  if (line == null) {
+    line = '';
+  } else {
+    console.log(line);
+    if (typeof line !== 'string') {
+      line = JSON.stringify(line, undefined, '  ');
+    }
+  }
+  consoleBox.innerText += `${line}${postamble}`;
+  consoleBox.scrollTo({behavior: 'smooth', top: consoleBox.scrollHeight});
+};
+
+const connectToBridge = () => {
+  const ip = bridgeIpBox.value;
+
+  if (!ip) {
+    return false;
+  }
+
+  hueSettings.bridgeIp = ip;
+  saveSettings();
+
+  bridge = jsHue().bridge(ip);
+  logLn(`Connected to bridge ${ip}`, true);
+  appTypeBox.select();
+  return true;
+};
+
+const createUser = () => {
+  if (!bridge) {
+    if (!connectToBridge()) {
+      return;
+    }
+  }
+
+  const appType = appTypeBox.value;
+  hueSettings.appType = appType;
+  saveSettings();
+
+  logLn('OK, press the button...');
+  createUserOnBridge(appType);
+};
+
+const connectUser = () => {
+  if (!bridge) {
+    if (!connectToBridge()) {
+      return;
+    }
+  }
+
+  logLn(`Opening user: ${appIdBox.value}`, true);
+  connectUserOnBridge(appIdBox.value);
+};
+
+const selectLightGroup = () => {
+  const lightGroup = lightGroupBox.value;
+
+  if (lightGroup == null || lightGroup === '') {
+    return false;
+  }
+
+  logLn(`Light group ${lightGroup} selected!`);
+  logLn(`Current settings:`);
+  logLn(localStorage.hueLights, true);
+  hueSettings.lightGroup = lightGroup;
+  saveSettings();
+  return true;
+};
+
+const createUserOnBridge = (appType) => {
+  bridge.createUser(appType).then(response => handleCreateUserResponse(appType, response));
+};
+
+const connectUserOnBridge = (userId) => {
+  hueSettings.bridgeUsername = userId;
+  saveSettings();
+
+  user = bridge.user(hueSettings.bridgeUsername);
+
+  logLn('Fetching light groups...');
+  user.getGroups().then(response => {
+    logLn(response);
+    for (const group of Object.entries(response)) {
+      const option = document.createElement('option');
+      option.value = group[0];
+      option.innerText = group[1].name;
+      if (hueSettings.lightGroup === group[0]) {
+        option.selected = true;
+        logLn(`Found previously selected light group: "${group[1].name}"`);
+      }
+      lightGroupBox.options.add(option);
+    }
+    logLn();
+  });
+};
+
+const handleCreateUserResponse = (appType, response) => {
+  const responseData = response[0];
+  if (responseData.error) {
+    logLn(`Error ${responseData.error.type}: ${responseData.error.description}`);
+    if (responseData.error.type === 101) {
+      logLn(`Will retry in 5 seconds...`);
+      setTimeout(() => {
+        createUserOnBridge(appType);
+      }, 5000);
+    } else {
+      logLn();
+    }
+  } else {
+    logLn(`Successfully created user: ${responseData.success.username}`);
+    logLn(JSON.stringify(responseData), true);
+    connectUserOnBridge(responseData.success.username);
+  }
+};
+
+const saveSettings = () => {
+  localStorage['hueLights'] = JSON.stringify(hueSettings);
+};
+</script>
+
+<script>
+const hueSettings = JSON.parse(localStorage['hueLights'] || '{}');
+
+const bridgeIpBox = document.querySelector('#bridge-ip');
+const connectButton = document.querySelector('#connect');
+const userSection = document.querySelector('#user-section');
+const userMode = document.querySelector('#user-mode');
+const appTypeBox = document.querySelector('#app-type');
+const createUserButton = document.querySelector('#create-user');
+const appIdBox = document.querySelector('#app-id');
+const connectUserButton = document.querySelector('#connect-user');
+const lightGroupBox = document.querySelector('#light-group');
+const selectLightGroupButton = document.querySelector('#select-light-group');
+
+const consoleBox = document.querySelector('#console');
+
+let bridge;
+let user;
+
+document.addEventListener('DOMContentLoaded', () => {
+  bridgeIpBox.value = hueSettings.bridgeIp || '';
+  appTypeBox.value = hueSettings.appType || '';
+  appIdBox.value = hueSettings.bridgeUsername || '';
+
+  userMode.value = hueSettings.bridgeUsername ? 'existing' : 'create';
+  userMode.dispatchEvent(new Event('input'));
+
+  bridgeIpBox.select();
+});
+</script>
+
+<script>
+connectButton.addEventListener('click', connectToBridge);
+bridgeIpBox.addEventListener('keydown', (e) => {
+  if (e.code === 'Enter') {
+    connectToBridge();
+  }
+});
+
+userMode.addEventListener('input', () => {
+  userSection.className = userMode.value;
+  userSection.querySelectorAll(
+      `fieldset:not(.${userMode.value})`).forEach(el => el.setAttribute('disabled', 'disabled'));
+  userSection.querySelector(`fieldset.${userMode.value}`).removeAttribute('disabled');
+});
+
+createUserButton.addEventListener('click', createUser);
+appTypeBox.addEventListener('keydown', (e) => {
+  if (e.code === 'Enter') {
+    createUser();
+  }
+});
+
+connectUserButton.addEventListener('click', connectUser);
+appIdBox.addEventListener('keydown', (e) => {
+  if (e.code === 'Enter') {
+    connectUser();
+  }
+});
+
+selectLightGroupButton.addEventListener('click', selectLightGroup);
+</script>
+
+</body>
+</html>
