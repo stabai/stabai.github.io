@@ -359,6 +359,6 @@ There are other guides to this subject with useful insight. They're also worth t
 * [Understanding Time Zones](https://lyonheart.us/articles/understanding-time-zones/) by Matthew Lyon
 * [Falsehoods programmers believe about time](https://gist.github.com/timvisee/fcda9bbdff88d45cc9061606b4b923ca#falsehoods-programmers-believe-about-time) compiled by Tim Visée
 
-## Author
+## Contributing
 
-This page was written by [@shawntabai](https://github.com/shawntabai), but contributions are welcome. I'll be happy to add your name for attribution if you contribute.
+This page was written by [@shawntabai](https://github.com/shawntabai), but contributions are welcome. I'll be happy to add your name for attribution too.
