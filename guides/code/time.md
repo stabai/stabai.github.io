@@ -16,7 +16,7 @@ Strictly speaking, there are two distinctly different things that we can mean wh
 
 Epoch time refers to an objective time continuum. The time continuum is like the number continuum: extends on to infinity, and 1 and 2 always have the same difference as 2 and 3. There are no units really, just points in the timeline that we'll call *instants*, and the way we define their quantity is arbitrary, as long as it's consistent. Its mathematical nature makes it ideal for use in science and computing.
 
-Note: The name "Unix time" is probably more popular than the name "epoch time", but I'm going to use the latter. What we're talking about has nothing to do with Unix, and the name can be confusing.
+*Note:* The name "Unix time" is probably more popular than the name "epoch time", but I'm going to use the latter. What we're talking about has nothing to do with Unix, and I think the name can be confusing.
 
 
 ### [Civil Time (aka "Human Time")](https://en.wikipedia.org/wiki/Civil_time)
@@ -130,7 +130,7 @@ A period is an amount of time measured by civil time units.
 
 Since it's defined *without* a specific `TimeZone` or start time, it will map to a different `Duration` depending on which ones are applied to it. Since the `TimeZone` will have different rules during different points in time, both of those properties can alter the `Duration` that a `Period` represents.
 
-IMPORTANT: A period of 1 day is **NOT** equivalent to a period of 24 hours! Depending on the time zone and start time applied to a period of 1 day, it could be 23 hours or 25 hours because it respects Daylight Savings Time.
+*IMPORTANT:* A period of 1 day is **NOT** equivalent to a period of 24 hours! A day respects Daylight Savings Time and other complex civil time rules. So depending on the time zone and start time applied to it, a period of 1 day could be anywhere from 23 to 25 hours.
 
 ### **Zoned Time**
 
@@ -151,7 +151,7 @@ The hybrid model that pairs a `TimeZone` with data from either civil time or epo
 
 A zoned date & time is a single point in either civil or epoch time, *with* a specific `TimeZone` that allows conversion between the two.
 
-Note: Because zoned time can handle both civil and epoch time, it can perform arithmetic operations with either a `Duration` or a `Period`.
+Because zoned time can handle both civil and epoch time, it can perform arithmetic operations with either a `Duration` or a `Period`.
 
 ### More Terms
 
@@ -181,10 +181,10 @@ It also assumes that the system time zone is the right one for your case. It cou
 
 It's highly advisable that you **NOT** perform manual time arithmetic. Any time you find yourself manually converting units or adding them together, try to train yourself to stop and use the framework instead.
 
-For example, if I want to schedule a process to run at the exact current time of day tomorrow, I might be tempted to do something simple like this:
+For example, if I want to schedule a process to run tomorrow at the current time, I might be tempted to do something simple like this:
 
 ```java
-long timeToRun = new java.util.DateTime().toMillis() + 8640000;
+long timeToRun = new DateTime().toMillis() + 8640000;
 ```
 
 Unfortunately, there are some problems with this:
