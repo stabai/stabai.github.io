@@ -6,7 +6,7 @@ Back in the early days of computing, the need for a precise, scientific measurem
 
 This document serves as a guide to help programmers understand that model, dispel confusion, and [hack time](https://www.youtube.com/watch?v=KEkrWRHCDQU).
 
-Note: Lots of terminology used here is not quite universal, these are just the names that I'm using for specificity. Also, some concepts have slight variations in different time frameworks. Check your framework to make sure you're using the conceptual equivalents.
+**Note:** Lots of terminology used here is not quite universal, these are just the names that I'm using for specificity. Also, some concepts have slight variations in different time frameworks. Check your framework to make sure you're using the conceptual equivalents.
 
 ## What is Time?
 
@@ -16,12 +16,12 @@ Strictly speaking, there are two distinctly different things that we can mean wh
 
 Epoch time refers to an objective time continuum. The time continuum is like the number continuum: extends on to infinity, and 1 and 2 always have the same difference as 2 and 3. There are no units really, just points in the timeline that we'll call *instants*, and the way we define their quantity is arbitrary, as long as it's consistent. Its mathematical nature makes it ideal for use in science and computing.
 
-*Note:* The name "Unix time" is probably more popular than the name "epoch time", but I'm going to use the latter. What we're talking about has nothing to do with Unix, and I think the name can be confusing.
+**Note:** The name "Unix time" is probably more popular than the name "epoch time", but I'm going to use the latter. What we're talking about has nothing to do with Unix, and I think the name can be confusing.
 
 
 ### [Civil Time (aka "Human Time")](https://en.wikipedia.org/wiki/Civil_time)
 
-Civil time refers to the way humans typically use time. You might think the mathematical nature of epoch time is also true for civil time, but it's only *mostly* true. Between calendar systems, multiple units of measurement, time zones, daylight savings time, leap years, and leap seconds, there are a lot of times when 2 + 1 does not equal 3.
+Civil time refers to the way humans typically use time. You might think the mathematical nature of epoch time is also true for civil time, but it turns out it's only *mostly* true. Between calendar systems, multiple units of measurement, time zones, daylight savings time, leap years, and leap seconds, there are a lot of times when 2 + 1 does not equal 3.
 
 #### A Quick Rant
 
@@ -130,7 +130,7 @@ A period is an amount of time measured by civil time units.
 
 Since it's defined *without* a specific `TimeZone` or start time, it will map to a different `Duration` depending on which ones are applied to it. Since the `TimeZone` will have different rules during different points in time, both of those properties can alter the `Duration` that a `Period` represents.
 
-*IMPORTANT:* A period of 1 day is **NOT** equivalent to a period of 24 hours! A day respects Daylight Savings Time and other complex civil time rules. So depending on the time zone and start time applied to it, a period of 1 day could be anywhere from 23 to 25 hours.
+**IMPORTANT:** A period of 1 day is **NOT** equivalent to a period of 24 hours! A day respects Daylight Savings Time and other complex civil time rules. So depending on the time zone and start time applied to it, a period of 1 day could be anywhere from 23 to 25 hours.
 
 ### **Zoned Time**
 
@@ -181,7 +181,7 @@ It also assumes that the system time zone is the right one for your case. It cou
 
 It's highly advisable that you **NOT** perform manual time arithmetic. Any time you find yourself manually converting units or adding them together, try to train yourself to stop and use the framework instead.
 
-For example, if I want to schedule a process to run tomorrow at the current time, I might be tempted to do something simple like this:
+For example, if I want to schedule a process to run tomorrow at the current time of day, I might be tempted to do something simple like this:
 
 ```java
 long timeToRun = new DateTime().toMillis() + 8640000;
@@ -239,7 +239,7 @@ ZonedDateTime today = clock.now().toZonedDateTime(userTimezone);
 int firstWorkday = firstWorkdayOfMonth(today.year, today.month);
 ```
 
-Even though we used our time API correctly, we still broke the abstraction of the time API that keeps us from shooting ourselves in the foot. We have suddenly opened ourselves up to several errors:
+Even though we used our time API correctly, we still broke the abstraction of the time API that keeps us from shooting ourselves in the foot. We have suddenly opened ourselves up to several potential errors:
 
 * The order of the year and month arguments could be backwards
 * The function might expect a 0-indexed month, while our time API gives us a 1-indexed month
@@ -248,7 +248,7 @@ Even though we used our time API correctly, we still broke the abstraction of th
 What we should do instead is rewrite that old function to use the proper types, so that we can call it like this:
 
 ```java
-YearMonth currentMonth = YearMonth.now(clock, userTimeZone);
+YearMonth currentMonth = YearMonth.ofInstant(clock.now(), userTimeZone);
 ZonedDateTime firstWorkday = firstWorkdayOfMonth(currentMonth, userTimezone);
 ```
 
@@ -260,7 +260,7 @@ To accomplish this, we'd ideally do the following:
 4. Replace all existing calls to the old function with calls to the new function
 5. Remove the old function
 
-The only problem is that we might not be able to modify that old function. If that's the case, then instead of fixing the problem at its source, we ~~hide it in the closet~~ fix it in one standard wrapper function that we always use instead of the external function. To do that, we should:
+The only problem is that we might be unable to rewrite that old function because we don't own that code. If that's the case, then instead of fixing the problem at its source, we ~~hide it in the closet~~ fix it in one standard wrapper function that we always use instead of the external function. To do that, we should:
 
 1. Add our own wrapper version of the function that uses our time API's proper types
 2. Test the crap out of that wrapper function to make sure it always behaves properly
@@ -277,7 +277,7 @@ The only problem is that we might not be able to modify that old function. If th
 
 Because of the various rules of different time zones, the following **CANNOT** be assumed:
 
-* Every year/day/etc has the same duration (DST, leap years, and leap seconds cause the lengths of most units to vary)
+* Every year/day/etc has the same duration (DST, leap years, and leap seconds cause the lengths of most civil units to vary)
 * All days start at midnight (time zones can make DST changes at midnight)
 * Any given time only occurs once in each day (DST causes time to "fall back" and repeat an hour)
 * Any given time occurs every day (DST causes time to "spring forward" and skip an hour)
@@ -340,11 +340,11 @@ These days, there are pretty good options for just about any language. This guid
 * Java
     * Java 8+: The new built-in [`java.time` library](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) is awesome
     * Java 7 and older: Use [JodaTime](https://www.joda.org/joda-time/)
-    * Note: NEVER, EVER use `java.util.Date` and its related types! It was built a long time ago in a galaxy far far away, and it contains fundamental mistakes in its handling of time!
+    * **IMPORTANT:** NEVER, EVER use `java.util.Date` and its related types! It was built a long time ago in a galaxy far far away, and it contains fundamental mistakes in its handling of time!
 * JavaScript/TypeScript
     * When [Temporal](https://tc39.es/proposal-temporal/docs/index.html) is available, use that
     * Otherwise, use [Luxon](https://moment.github.io/luxon/) or [Moment.js](https://momentjs.com/) (see the [differences](https://moment.github.io/luxon/docs/manual/moment.html))
-    * Note: NEVER, EVER use the built-in `Date` and its related types! It was built a long time ago in a galaxy far far away, and it contains fundamental mistakes in its handling of time!
+    * **IMPORTANT:** NEVER, EVER use the built-in `Date` and its related types! It was built a long time ago in a galaxy far far away, and it contains fundamental mistakes in its handling of time!
 
 TODO: Add more languages
 
