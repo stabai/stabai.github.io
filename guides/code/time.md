@@ -158,7 +158,7 @@ Because zoned time can handle both civil and epoch time, it can perform arithmet
 There are also a few more terms that help us avoid some common pitfalls that we'll explore in the next section:
 
 * **Start of Day**: The generic name for the time when a day first starts (because we shouldn't assume that would be midnight for every day)
-* **Standard Days/Seconds/etc** A duration of time measured in those units *if there are no special incidents between the two*
+* **Standard Days/Seconds/etc**: A duration of time measured in those units *if there are no special incidents between the two*
     * Useful if we want to calculate the epoch time difference between two unknown points in civil time, and it doesn't matter if we're off by a small amount
     * It's always better to use your date/time framework to do these functions, when possible
 * **Clock / Time Source**: A thing that measures the current point in the time continuum
@@ -175,7 +175,7 @@ When you want to get the current time in code, it's tempting to just use `new Da
 
 First, it assumes that you always want to use the system clock. This is usually a bad idea in automated tests because you want tests to be deterministic, and the system clock is by definition not deterministic. Decoupling values of time from the system clock allows for better code readability and maintainability.
 
-It also assumes that the system time zone is the right one for your case. It could be, but it frequently isn't. The system clock on your server is almost never the right choice for users of your service. Quite often, there is actually *NO* meaningful time zone to store. So we should once again always default to epoch time, and many `Clock` implementations force this.
+It also assumes that the system time zone is the right one for your case. It could be, but it frequently isn't. The system clock on your server is almost never the right choice for users of your service. Quite often, there is actually *NO* meaningful time zone to store. So we should still default to epoch time, and many `Clock` implementations force this.
 
 ### Use a Time Framework, and Use it Well
 
@@ -218,7 +218,7 @@ timestampInMillis += userSpecifiedTime.seconds * 1000;
 timestampInMillis += userSpecifiedTime.millis;
 ```
 
-I didn't put any mathematical errors into those calculations (as far as I know), but there sure were a lot of places for them to sneak in (multiplying by 1000 is very easy to forget). Also, the final answer will not be correct on non-standard days.
+I didn't put any mathematical errors into those calculations (as far as I know), but there sure were a lot of places for them to sneak in (multiplying by 1000 is very easy to forget). Also, the final answer will not be correct for non-standard days.
 
 But using our time API correctly, it should look more like this:
 
@@ -232,7 +232,7 @@ In addition to always yielding the right answer, this code replaces cryptic form
 
 ### Don't Decompose Time
 
-There are some times when we have to work with time using existing code that doesn't properly support it. For example, let's say I have a function that will tell me the first workday of the current month. But the existing convention for calling this might be as follows:
+There are some instances when we have to work with time using existing code that doesn't follow these best practices. For example, let's say I have a function that will tell me the first workday of a month. But the existing convention for calling this might be as follows:
 
 ```java
 ZonedDateTime today = clock.now().toZonedDateTime(userTimezone);
@@ -243,13 +243,13 @@ Even though we used our time API correctly, we still broke the abstraction of th
 
 * The order of the year and month arguments could be backwards
 * The function might expect a 0-indexed month, while our time API gives us a 1-indexed month
-* The returned workday could be misused (e.g. it's 0-indexed, we accidentally apply it to the wrong date)
+* The returned workday could be misused (e.g. it's 0-indexed, we accidentally apply it to the wrong unit)
 
 What we should do instead is rewrite that old function to use the proper types, so that we can call it like this:
 
 ```java
 YearMonth currentMonth = YearMonth.ofInstant(clock.now(), userTimeZone);
-ZonedDateTime firstWorkday = firstWorkdayOfMonth(currentMonth, userTimezone);
+ZonedDateTime firstWorkday = firstWorkdayOfMonth(currentMonth);
 ```
 
 To accomplish this, we'd ideally do the following:
@@ -283,25 +283,26 @@ Because of the various rules of different time zones, the following **CANNOT** b
 * Any given time occurs every day (DST causes time to "spring forward" and skip an hour)
 * A greater number in civil time always references an earlier point in time than a lesser one (DST causes time to "fall back", so 2:59 may be followed by 2:00)
 * UTC offsets can be used as a stand-in for time zones (time zones are unfortunately far more complicated... have I mentioned DST?)
-* All time zones follow the same behavioral rules (lol)
-* The duration between two points in time can be calculated with simple arithmetic (only if you account for all the many rules of every time zone, which you will almost certainly get wrong)
+* All time zones follow the same behavioral rules ([lol](https://en.wikipedia.org/wiki/Daylight_saving_time_by_country#Observance_as_of_2022))
+* The duration between two points in time can be calculated with simple arithmetic (only if you know there are no non-standard times within than period, which is effectively unknowable without the full timezone database)
 * The system clock alone can be used to derive the civil time
     * It's our best resource for getting the current epoch time, but there are many cases when the time zone of the machine running your application is unknown or unpredictable
     * We still need the user's accurate time zone to translate between epoch and civil time (the system clock could be a good way for us to find that on phone apps, but it's a bad way for server apps)
 * Storing a civil time and storing an epoch time are equivalent (they are inherently different things, and require a time zone for mapping)
-    * Most times we want to store an epoch time, and that should be our default assumption
+    * In most cases, we want to store an epoch time, and that should be our default assumption
     * There are some exceptions when storing a civil time is the right thing to do (e.g. a setting for a daily alarm clock should map to civil time rather than epoch time)
+    * There are very few cases where both time systems will work properly
 
 There are also a couple of truths that we generally shouldn't rely on either, because they're often violated when using a fake clock in unit tests:
 
-* Time ticks on regularly
+* Time ticks on at a regular rate
 * When time changes, it always moves forward
 
 ## FAQs
 
 ### What's a *standard* day?
 
-A standard day is a day with exactly 86,400 (60 seconds * 60 minutes * 24 hours) standard seconds. As we've seen, this is often not the case because of Daylight Savings Time and leap seconds.
+A standard day is a `Duration` (epoch time) containing exactly 86,400 (60 seconds * 60 minutes * 24 hours) standard seconds. As we've seen, days (civil time) are not all the same length because of Daylight Savings Time and leap seconds.
 
 I don't believe any time zones use non-standard *seconds*, but it is a complexity accounted for by [some time libraries](http://joda-time.sourceforge.net/apidocs/org/joda/time/Duration.html#getStandardSeconds()).
 
@@ -323,7 +324,7 @@ You can, but it's a bad idea. It's true that a `ZonedDateTime` can navigate both
 
 Sure, if we abolish Daylight Savings Time, time zones, leap years, and leap seconds... and get the whole world to agree... and never need to reference times in the past before they were abolished. And abolishing those things would cause the calendar to get strange, because they account for the fact that we have multiple types of time units that would get out of sync, like Earth orbit (years), Earth rotation (days), and moon orbit (months).
 
-The unfortunate truth is that this is an accurate model of the insanely complex timekeeping system our world has for the foreseeable future. All the simpler models we have are only simpler because they oversimplify, leading to inaccurate and often unpredictable results.
+I really wish we could simplify this, but the unfortunate truth is that this is an accurate model of the insanely complex timekeeping system our world has for the foreseeable future. All the simpler models we have are only simpler because they oversimplify, leading to inaccurate and often unpredictable results.
 
 ### Can we just keep counting time this way forever? Or will it eventually get too big?
 
