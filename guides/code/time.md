@@ -30,7 +30,7 @@ Some lifeforms use a single timekeeping measurement, but we are a proud race wit
 * Earth's orbit around the Sun: Years
 * Moon's orbit around the Earth: Months
 * Earth's rotation along its axis: Days (and to some extent, all sub-day measurements too)
-* Electromagnetic radiation: Seconds and sub-seconds (though this one is fortunately contrived in a way to make a precisely measurable phenomenon map neatly to days)
+* Electromagnetic radiation: Seconds and sub-seconds (though this one is fortunately contrived in a way to make a precisely measurable phenomenon map somewhat neatly to days)
 
 Since these phenomena are completely unrelated, most conversions between them don't yield round numbers. A year is 365.24 days, and a [synodic month](https://en.wikipedia.org/wiki/Lunar_phase) is 29.53 days. Many of our complex timekeeping rules come from attempts to fix these incongruities between different units.
 
@@ -40,7 +40,7 @@ To make epoch time and civil time play nice together, we map both concepts of ti
 
 ![Timeline Example](/resources/timeline.png)
 
-But this abstraction is starting to get pretty complex. Let's take a step back.
+But this abstraction is starting to get pretty complex. Let's take a step back and define the parts we need to make it work.
 
 ## Time Data Types
 
@@ -159,7 +159,7 @@ There are also a few more terms that help us avoid some common pitfalls that we'
 
 * **Start of Day**: The generic name for the time when a day first starts (because we shouldn't assume that would be midnight for every day)
 * **Standard Days/Seconds/etc**: A duration of time measured in those units *if there are no special incidents between the two*
-    * Useful if we want to calculate the epoch time difference between two unknown points in civil time, and it doesn't matter if we're off by a small amount
+    * Useful if we want to calculate the time difference between two points in epoch time, and it doesn't matter if we're off by a small amount because we ignored civil time rules
     * It's always better to use your date/time framework to do these functions, when possible
 * **Clock / Time Source**: A thing that measures the current point in the time continuum
 
