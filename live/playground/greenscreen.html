@@ -29,8 +29,10 @@ body, html {
 </div>
 
 <script>
-  document.querySelector('.screen').addEventListener('click', (ev) => {
-    document.querySelector('.tip').style.opacity = 0;
-    ev.target.requestFullscreen();
+  const $screen = document.querySelector('.screen');
+  const $tip = document.querySelector('.tip');
+  $screen.addEventListener('click', (ev) => {
+    $tip.style.opacity = 0;
+    $screen.requestFullscreen();
   });
 </script>
