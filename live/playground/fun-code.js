@@ -13,6 +13,8 @@ function checkBuffer(addToBuffer) {
   buffer = buffer.substring(buffer.length - 4);
   if (buffer.toLowerCase() === 'yuni') {
     magicWord({'type': 'cat', 'imageUrl': 'cat-calico.gif'});
+  } else if (buffer.toLowerCase() === 'coco') {
+    magicWord({'type': 'cat', 'imageUrl': 'cat-midnight.gif'});
   }
 }
 
